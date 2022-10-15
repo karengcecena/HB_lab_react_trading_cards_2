@@ -59,8 +59,66 @@ function TradingCard(props) {
   );
 }
 
+
+function AddTradingCard(props) {
+  const [name, setName] = React.useState("");
+  const [skill, setSkill] = React.useState("");
+  function addNewCard() {
+    fetch("/add-card", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify({"name": name, "skill": skill})
+      body: JSON.stringify({ name, skill })
+    })
+      .then((response) => response.json())
+      .then((jsonResponse) => {
+        // this could also be written as const cardAdded = { jsonResponse } using
+        // Javascript destructuring
+        const cardAdded = jsonResponse.cardAdded;
+        props.addCard(cardAdded); 
+      });
+  };
+
+  return (
+    <React.Fragment>
+      <h2>Add New Trading Card</h2>
+      <label htmlFor="nameInput">Name</label>
+      <input
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+        id="nameInput"
+        style={{ marginLeft: "5px" }}
+      ></input>
+      <label
+        htmlFor="skillInput"
+        style={{ marginLeft: "10px", marginRight: "5px" }}
+      >
+        Skill
+      </label>
+      <input
+        value={skill}
+        onChange={(event) => setSkill(event.target.value)}
+        id="skillInput"
+      ></input>
+      <button style={{ marginLeft: "10px" }} onClick={addNewCard}>
+        Add
+      </button>
+    </React.Fragment>
+  );
+}
+
+// BIG GUY //
 function TradingCardContainer() {
   const [cards, setCards] = React.useState([]);
+
+  function addCard(newCard) {
+    // [...cards] makes a copy of cards. Similar to currentCards = cards[:] in Python
+    const currentCards = [...cards];
+    // [...currentCards, newCard] is an array containing all elements in currentCards followed by newCard
+    setCards([...currentCards, newCard]);
+  }
 
   React.useEffect(() => {
     fetch("/cards.json")
@@ -76,6 +134,7 @@ function TradingCardContainer() {
 
   // const [cards, setCards] = React.useState([floatCard])
 
+  // the div returned from the TradingCard component goes here
   const tradingCards = [];
 
   for (const currentCard of cards) {
@@ -90,9 +149,12 @@ function TradingCardContainer() {
   }
 
   return (
-  <div className="grid">{tradingCards}</div>
+    <React.Fragment>
+      <AddTradingCard addCard={addCard}/>
+      <h2>Trading Cards</h2>
+      <div className="grid">{tradingCards}</div>
+    </React.Fragment>
   );
-
 }
 
 ReactDOM.render(<TradingCardContainer />, document.getElementById('container'));
